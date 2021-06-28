@@ -1,27 +1,50 @@
+from typing import List
+
 import click
 
 from domains.chat import Chat
 from domains.input import Input
-from domains.login import Login
-
+from domains.message import Message
+from domains.option import Option
+from domains.sender import Sender
 from reasons import Reason
 
 
-def login_attempt():
-    login = Login(name=Input.input_name(), email=Input.input_email()).authorize()
-    if login is not None:
-        click.echo(login)
-        login_attempt()
+def messaging(chat: Chat):
+    Reason.message_chatting()
+    chat.send_message(Input.input_message())
+    view_messages(me=chat.sender, messages=chat.messages)
+    messaging(chat)
+
+
+def view_messages(me: str, messages: List[Message]):
+    for message in messages:
+        if me == message.sender.id:
+            click.echo('me -> "{body}" '.format(body=message.body))
+        else:
+            click.echo('"{body}" <- {id}'.format(body=message.body, id=message.sender.id))
+
+
+def input_action(chat: Chat):
+    action = Option(action=Input.action())
+    if action.is_create():
+        chat.create()
+        messaging(chat)
+    elif action.is_join():
+        chat.join()
+        messaging(chat)
     else:
-        Reason.success()
-        Chat()
+        Reason.invalid("Action")
+        Reason.input("Action")
+        input_action(chat)
 
 
 def main():
-    login_attempt()
+    chat = Chat(sender=Sender(Input.input_name()))
+    click.echo("Login as: {name}".format(name=chat.sender))
+    input_action(chat)
 
 
 if __name__ == '__main__':
     main()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

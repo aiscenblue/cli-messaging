@@ -2,9 +2,13 @@ import random
 
 
 class Sender:
-    id: bytes
+    id: int
     name: str
 
     def __init__(self, name: str):
         self.name = name
-        self.id = random.randbytes()
+        self.id = Sender.generate_id()
+
+    @staticmethod
+    def generate_id():
+        return random.randint(0, 99999)

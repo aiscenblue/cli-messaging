@@ -1,82 +1,34 @@
-import random
 from typing import List
 
-import click
-
-from Exceptions import InvalidOption
-from constants import Method, Layer
-from domains.input import Input
 from domains.message import Message
-from helper import Helper
-from reasons import Reason, ErrorReason
+from domains.sender import Sender
+from reasons import Reason
 
 
 class Chat:
-    __prefix = "/"
-    messages: List[Message] = []
+    __sender: Sender = None
+    __authors: List[Sender] = []
+    __messages: List[Message] = []
 
-    def __init__(self):
+    def __init__(self, sender: Sender):
         Reason.welcome()
-        Chat.instructions()
-        input_command = input(self.__prefix)
-        try:
-            receiver = Command(input_command).get_receiver()
-            if receiver is not None:
-                Reason.message_chatting()
-                self.send(Message(sender_id=123, receiver_id=receiver, body=Input.input_message()))
-            else:
-                Reason.message_disconnected()
-                Chat()
-        except InvalidOption:
-            Reason.invalid("Option")
-            Chat()
+        self.__sender = sender
 
-    def send(self, message: Message):
-        self.messages.append(message)
-        self.print_messages()
-        self.send(Message(sender_id=message.sender_id, receiver_id=message.receiver_id, body=Input.input_message()))
+    def create(self):
+        self.__authors.append(self.__sender)
 
-    def print_messages(self):
-        for _ in self.messages:
-            click.echo(_.print())
+    def join(self):
+        self.__authors.append(self.__sender)
 
-    @staticmethod
-    def instructions():
-        Reason.create_group_instruction()
-        Reason.join_group_instruction()
+    def send_message(self, content: str):
+        message = Message(sender=self.__sender, body=content)
+        self.__messages.append(message)
+        return self
 
+    @property
+    def messages(self) -> List[Message]:
+        return self.__messages
 
-class Command:
-    receiver: None or int
-
-    def __init__(self, source: str):
-        if Helper.has_layer_of(source, Layer.DEFAULT.value):
-            [method, receiver] = Helper.split(source)
-            if Command.can_create(method):
-                self.receiver = Stream().create(receiver)
-            else:
-                raise InvalidOption(ErrorReason.INVALID_OPTION)
-        else:
-
-            raise InvalidOption(ErrorReason.INVALID_OPTION)
-
-    @staticmethod
-    def can_create(method: str) -> bool:
-        return method == Method.CREATE.value
-
-    def get_receiver(self):
-        return self.receiver
-
-
-class Stream:
-    id: int = None
-    name: str = None
-
-    def __init__(self):
-        pass
-
-    def create(self, receiver: int):
-        random_id = random.randint(0, 99999)
-        self.name = str(random_id)
-        self.id = random_id
-        return receiver
+    @property
+    def sender(self) -> str:
+        return str(self.__sender.id)

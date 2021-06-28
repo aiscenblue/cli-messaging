@@ -8,14 +8,8 @@ class Input:
         return _input if _input is not None else "anonymous"
 
     @staticmethod
-    def input_email() -> str:
-        field = "email"
-        _email: str = str(input(Reason.input(field)))
-        if _email is None:
-            Reason.invalid(field)
-            Input.input_email()
-        else:
-            return _email
+    def action() -> str:
+        return str(input(Reason.input("Action")))
 
     @staticmethod
     def input_message() -> str:

@@ -1,7 +1,12 @@
+from domains.sender import Sender
+
+
 class Message:
-    def __init__(self, sender_id: int, receiver_id: int, body: str):
-        self.sender_id = sender_id
-        self.receiver_id = receiver_id
+    sender: Sender = None
+    body: str = None
+
+    def __init__(self, sender: Sender, body: str):
+        self.sender = sender
         self.body = body
 
     def print(self):
@@ -11,7 +16,7 @@ class Message:
             return self.send_to()
 
     def send_to(self):
-        return '@{sender} -> message="{message}"'.format(sender=self.sender_id, message=self.body)
+        return '@{sender} -> message="{message}"'.format(sender=self.sender.id, message=self.body)
 
     def send_from(self):
-        return '"{message}"=message <- {sender}@'.format(sender=self.sender_id, message=self.body)
+        return '"{message}"=message <- {sender}@'.format(sender=self.sender.id, message=self.body)
